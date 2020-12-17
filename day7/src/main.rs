@@ -51,6 +51,12 @@ fn load_data() -> HashMap<String, Vec<(u32, String)>> {
     ret
 }
 
+// Iterate over each bag type and calculate how many shiny gold bags that type
+// can contain. Save a count of the bag types that can contain a shiny gold bag.
+//
+// There's a good bit of overkill here since we care only that a bag can contain
+// a shiny gold bag and not the number that it can contain. I guessed (incorrectly)
+// that the count would be valuable in part 2. Oh well ...
 fn part1(input_data: &HashMap<String, Vec<(u32, String)>>) {
     let mut can_contain_gold_bag_count = 0;
     let mut gold_bag_counts: HashMap<&String, u32> = HashMap::with_capacity(input_data.len());
@@ -60,10 +66,8 @@ fn part1(input_data: &HashMap<String, Vec<(u32, String)>>) {
             let count = calculate_gold_bag_count(key, &input_data, &mut gold_bag_counts);
             gold_bag_counts.insert(key, count);
         }
-    }
 
-    for (bag, count) in gold_bag_counts {
-        if count > 0 {
+        if *gold_bag_counts.get(key).unwrap() > 0 {
             can_contain_gold_bag_count += 1;
         }
     }
@@ -72,44 +76,52 @@ fn part1(input_data: &HashMap<String, Vec<(u32, String)>>) {
 
 }
 
-fn calculate_gold_bag_count<'a>(bag: &String, bag_contents: &'a HashMap<String, Vec<(u32, String)>>, gold_bag_counts: &mut HashMap<&'a String, u32>) -> u32 {
-    let (_, contents) = bag_contents.get_key_value(bag).unwrap();
+fn calculate_gold_bag_count<'a>(
+        bag: &String,
+        bag_contents: &'a HashMap<String, Vec<(u32, String)>>,
+        gold_bag_counts: &mut HashMap<&'a String, u32>
+    ) -> u32 {
+
+    let contents = bag_contents.get(bag).unwrap();
 
     match contents.len() {
+        // Current bag has no contents, so it contains no gold bags
         0 => 0,
-        _ => {
-            let bag_count: Vec<u32> = contents.iter()
-                .map(|c|
-                    match c.1.contains("shiny gold") {
-                        true => c.0,
-                        false => {
-                            c.0 * match gold_bag_counts.get_key_value(&c.1) {
-                                Some((_, v)) => *v,
-                                None => {
-                                    let count = calculate_gold_bag_count(&c.1, bag_contents, gold_bag_counts);
-                                    gold_bag_counts.insert(&c.1, count);
-                                    count
-                                }
-                            }
+        
+        // Current bag contains gold bags relevant to what its component bags are.
+        // For each set of bags of a type,
+        //      If the type is shiny gold bag, use its count
+        //      Otherwise, its value is the number of bags * how many shiny gold
+        //          bags that bag type can contain
+        _ => contents.iter().map(|c|
+            match c.1.contains("shiny gold") {
+                true => c.0,
+                false => {
+                    c.0 * match gold_bag_counts.get_key_value(&c.1) {
+                        Some((_, v)) => *v,
+                        None => {
+                            let count = calculate_gold_bag_count(&c.1, bag_contents, gold_bag_counts);
+                            gold_bag_counts.insert(&c.1, count);
+                            count
                         }
                     }
-                ).collect();
-            bag_count.iter().sum()
-        }
+                }
+            }
+        ).sum()
     }
 }
 
 fn part2(input_data: &HashMap<String, Vec<(u32, String)>>) {
-    let nested_bags = calculate_nested_bags(&"shiny gold".to_string(), &input_data);
-    println!("Part 2: Shiny Gold bag contents count: {}", nested_bags - 1);
+    let nested_bags = calculate_total_bags(&"shiny gold".to_string(), &input_data) - 1;
+    println!("Part 2: Shiny Gold bag contents count: {}", nested_bags);
 }
 
-fn calculate_nested_bags(bag: &String, bag_contents: &HashMap<String, Vec<(u32, String)>>) -> u32 {
+fn calculate_total_bags(bag: &String, bag_contents: &HashMap<String, Vec<(u32, String)>>) -> u32 {
     let (_, contents) = bag_contents.get_key_value(bag).unwrap();
 
     let count = match contents.len() {
         0 => 0,
-        _ => contents.iter().map(|c| c.0 * calculate_nested_bags(&c.1, bag_contents)).sum()
+        _ => contents.iter().map(|c| c.0 * calculate_total_bags(&c.1, bag_contents)).sum()
     };
 
     count + 1
