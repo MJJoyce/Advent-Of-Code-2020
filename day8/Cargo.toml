@@ -5,5 +5,11 @@ authors = ["Michael Joyce <Michael.J.Joyce@jpl.nasa.gov>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benchmark"
+harness = false
