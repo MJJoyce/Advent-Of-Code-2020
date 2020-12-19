@@ -117,7 +117,6 @@ pub fn part2(cmds: &Vec<Cmd>) -> (usize, i64) {
     }
 
     unimplemented!("Failed to detect command to fix");
-    //return (0, -1); // We
 }
 
 fn swap(cmd: &Cmd) -> Cmd {
