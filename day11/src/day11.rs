@@ -1,7 +1,5 @@
-use std::collections::HashMap; use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader};
 use std::fs::File;
-
-use itertools::Itertools;
 
 pub fn load_data() -> Vec<Vec<char>> {
     let br = BufReader::new(File::open("./input/input.txt").unwrap());
@@ -167,7 +165,6 @@ mod test {
         spaces.push("L.LLLLLL.L".to_string().chars().collect());
         spaces.push("L.LLLLL.LL".to_string().chars().collect());
 
-        println!("{}", part2(&mut spaces));
-        assert!(false);
+        assert_eq!(part2(&mut spaces), 26);
     }
 }
