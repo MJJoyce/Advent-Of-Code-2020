@@ -1,9 +1,16 @@
-use std::io::{BufRead, BufReader};
 use std::fs::File;
+use std::io::{BufRead, BufReader};
 
-
-static DIRECTIONS: [(i64, i64); 8] = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)];
-
+static DIRECTIONS: [(i64, i64); 8] = [
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, -1),
+    (0, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
+];
 
 pub fn load_data() -> Vec<Vec<char>> {
     let br = BufReader::new(File::open("./input/input.txt").unwrap());
@@ -24,7 +31,7 @@ pub fn part1(spaces: &mut Vec<Vec<char>>) -> u64 {
         for (y, row) in spaces.iter().enumerate() {
             for (x, space) in row.iter().enumerate() {
                 if spaces[y][x] == '.' {
-                    continue
+                    continue;
                 }
 
                 let occupied = occupied_neighbors(y, x, true, spaces);
@@ -35,17 +42,21 @@ pub fn part1(spaces: &mut Vec<Vec<char>>) -> u64 {
         }
 
         if update_spaces.len() == 0 {
-            break
+            break;
         }
 
-        update_spaces.iter().for_each(|(x, y)| spaces[*y][*x] = if spaces[*y][*x] == 'L' {'#'} else {'L'});
+        for (x, y) in update_spaces.iter() {
+            spaces[*y][*x] = if spaces[*y][*x] == 'L' { '#' } else { 'L' };
+        }
         update_spaces.clear();
     }
 
     let mut occupied_count = 0;
     for row in spaces.iter() {
         for space in row {
-            if *space == '#' {occupied_count += 1;}
+            if *space == '#' {
+                occupied_count += 1;
+            }
         }
     }
 
@@ -59,7 +70,7 @@ pub fn part2(spaces: &mut Vec<Vec<char>>) -> u64 {
         for (y, row) in spaces.iter().enumerate() {
             for (x, space) in row.iter().enumerate() {
                 if spaces[y][x] == '.' {
-                    continue
+                    continue;
                 }
 
                 let occupied = occupied_neighbors(y, x, false, spaces);
@@ -70,28 +81,51 @@ pub fn part2(spaces: &mut Vec<Vec<char>>) -> u64 {
         }
 
         if update_spaces.len() == 0 {
-            break
+            break;
         }
 
-        update_spaces.iter().for_each(|(x, y)| spaces[*y][*x] = if spaces[*y][*x] == 'L' {'#'} else {'L'});
+        for (x, y) in update_spaces.iter() {
+            spaces[*y][*x] = if spaces[*y][*x] == 'L' { '#' } else { 'L' };
+        }
         update_spaces.clear();
     }
 
     let mut occupied_count = 0;
     for row in spaces.iter() {
         for space in row {
-            if *space == '#' {occupied_count += 1;}
+            if *space == '#' {
+                occupied_count += 1;
+            }
         }
     }
 
     occupied_count
 }
 
-fn occupied_neighbors(row: usize, col: usize, immediate_neighbors: bool, spaces: &Vec<Vec<char>>) -> u64 {
+/// Calculate the number of occupied neighbors for a given location
+///
+/// # Arguments:
+///
+/// * `row` - The row of the location to check from
+/// * `col` - The row of the location to check from
+/// * `spaces` - The 2D space in which to search
+/// * `immediate_neighbor` - Flag indicating if we should only check the nearest
+///         neighbor in the indicated direction.
+///
+/// Returns:
+///     The number of occupied neighbor spaces
+fn occupied_neighbors(
+    row: usize,
+    col: usize,
+    immediate_neighbors: bool,
+    spaces: &Vec<Vec<char>>,
+) -> u64 {
+
     let mut occupied_neighbors = 0;
 
     for c in DIRECTIONS.iter() {
-        if let Some((nr, nc)) = locate_nearest_seat(row, col, c.0, c.1, spaces, immediate_neighbors) {
+        if let Some((nr, nc)) = locate_nearest_seat(row, col, c.0, c.1, spaces, immediate_neighbors)
+        {
             if spaces[nr][nc] == '#' {
                 occupied_neighbors += 1;
             }
@@ -101,13 +135,38 @@ fn occupied_neighbors(row: usize, col: usize, immediate_neighbors: bool, spaces:
     occupied_neighbors
 }
 
-fn locate_nearest_seat(row: usize, col: usize, row_dif: i64, col_dif: i64, spaces: &Vec<Vec<char>>, immediate_neighbor: bool) -> Option<(usize, usize)> {
+/// Locate the nearest seat in a given direction from a given location
+///
+/// # Arguments:
+///
+/// * `row` - The row of the location to check from
+/// * `col` - The row of the location to check from
+/// * `row_dif` - The row direction to iterate in (one of -1, 0, 1)
+/// * `col_dif` - The col direction to iterate in (one of -1, 0, 1)
+/// * `spaces` - The 2D space in which to search
+/// * `immediate_neighbor` - Flag indicating if we should only check the nearest
+///         neighbor in the indicated direction.
+fn locate_nearest_seat(
+    row: usize,
+    col: usize,
+    row_dif: i64,
+    col_dif: i64,
+    spaces: &Vec<Vec<char>>,
+    immediate_neighbor: bool,
+) -> Option<(usize, usize)> {
+
     let mut row = row as i64 + row_dif;
     let mut col = col as i64 + col_dif;
 
-    while row >= 0 && row <= (spaces.len() - 1) as i64 && col >= 0 && col <= (spaces[0].len() - 1) as i64 {
-        if spaces[row as usize][col as usize] != '.' || immediate_neighbor {
+    while row >= 0 && row <= (spaces.len() - 1) as i64 &&
+          col >= 0 && col <= (spaces[0].len() - 1) as i64
+    {
+        if spaces[row as usize][col as usize] != '.' {
             return Some((row as usize, col as usize));
+        }
+
+        if immediate_neighbor {
+            return None
         }
 
         row += row_dif;
