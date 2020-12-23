@@ -15,10 +15,9 @@ pub fn load_data() -> Vec<Vec<char>> {
     spaces
 }
 
-pub fn part1(spaces: &mut [Vec<char>]) -> u64 {
+pub fn part1(spaces: &mut Vec<Vec<char>>) -> u64 {
     let mut update_spaces: Vec<(usize, usize)> = Vec::new();
 
-    let mut cnt = 0;
     loop {
         for (y, row) in spaces.iter().enumerate() {
             for (x, space) in row.iter().enumerate() {
@@ -58,7 +57,6 @@ pub fn part1(spaces: &mut [Vec<char>]) -> u64 {
                     if x < row.len() - 1 {
                         if spaces[y + 1][x + 1] == '#' {occupied_neighbors += 1;}
                     }
-
                 }
 
                 if *space == '#' && occupied_neighbors >= 4 || *space == 'L' && occupied_neighbors == 0 {
@@ -88,7 +86,7 @@ pub fn part1(spaces: &mut [Vec<char>]) -> u64 {
     occupied_count
 }
 
-pub fn part2(spaces: &mut [Vec<char>]) -> u64 {
+pub fn part2(spaces: &mut Vec<Vec<char>>) -> u64 {
     let mut update_spaces: Vec<(usize, usize)> = Vec::new();
 
     loop {
@@ -99,7 +97,6 @@ pub fn part2(spaces: &mut [Vec<char>]) -> u64 {
                 }
 
                 let mut occupied_neighbors = 0;
-
                 for c in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)].iter() {
                     if let Some((nr, nc)) = locate_nearest_seat(y, x, c.0, c.1, spaces) {
                         if spaces[nr][nc] == '#' {
