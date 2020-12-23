@@ -1,7 +1,6 @@
-use std::collections::{VecDeque, HashMap};
+use std::collections::{HashMap, VecDeque};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
 
 pub fn load_data() -> Vec<u64> {
     let br = BufReader::new(File::open("./input/input.txt").unwrap());
@@ -26,13 +25,12 @@ pub fn part1(input: &[u64]) -> u64 {
         match window[1] - window[0] {
             1 => d_1 += 1,
             3 => d_3 += 1,
-            _ => ()
+            _ => (),
         }
     }
 
     d_1 * d_3
 }
-
 
 // Part 2 asks us to determine the number of valid adapter configurations that can
 // be generated.
@@ -53,7 +51,7 @@ pub fn part2(input: &[u64]) -> u64 {
 
     // From last node to first, calculate the number of valid paths
     // the current node has to the goal and cache that result.
-    for cur_index in (0 .. input.len() - 1).rev() {
+    for cur_index in (0..input.len() - 1).rev() {
         let cur_node = input[cur_index];
         let mut paths = 0;
 
@@ -79,7 +77,6 @@ pub fn part2(input: &[u64]) -> u64 {
     valid_paths[&0]
 }
 
-
 // This is effectively the same part 2 implementation with memoization on only
 // the last 3 nodes that we've processed. Anything more than that is a waste
 // of memory.
@@ -91,7 +88,7 @@ pub fn part2_min_mem(input: &[u64]) -> u64 {
 
     // From last node to first, calculate the number of valid paths
     // the current node has to the goal and cache that result.
-    for cur_index in (0 .. input.len() - 1).rev() {
+    for cur_index in (0..input.len() - 1).rev() {
         let cur_node = input[cur_index];
         let mut paths = 0;
 
@@ -120,8 +117,6 @@ pub fn part2_min_mem(input: &[u64]) -> u64 {
     *valid_paths.get(0).unwrap()
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -141,8 +136,9 @@ mod tests {
         assert_eq!(part2_min_mem(&input), 8);
 
         let mut input = vec![
-            28, 33, 18, 42, 31, 14, 46, 20, 48, 47, 24, 23, 49, 45, 19, 38,
-            39, 11, 1, 32, 25, 35, 8, 17, 7, 9, 4, 2, 34, 10, 3, 0, 52];
+            28, 33, 18, 42, 31, 14, 46, 20, 48, 47, 24, 23, 49, 45, 19, 38, 39, 11, 1, 32, 25, 35,
+            8, 17, 7, 9, 4, 2, 34, 10, 3, 0, 52,
+        ];
         input.sort();
         assert_eq!(part2(&input), 19208);
         assert_eq!(part2_min_mem(&input), 19208);

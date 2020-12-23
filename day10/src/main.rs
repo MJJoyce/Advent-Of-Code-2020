@@ -4,7 +4,10 @@ fn main() {
     let input_data = load_data();
 
     let answer = part1(&input_data);
-    println!("\nPart 1: Count 1 differences * Count 3 differences: {}", answer);
+    println!(
+        "\nPart 1: Count 1 differences * Count 3 differences: {}",
+        answer
+    );
 
     println!("\nPart 2:");
     let answer = part2(&input_data);
