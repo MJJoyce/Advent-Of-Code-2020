@@ -1,4 +1,5 @@
 use std::cmp::PartialEq;
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -43,11 +44,9 @@ enum Direction {
     West
 }
 
-static facing_change: [Direction; 4] = [Direction::North, Direction::East, Direction::South, Direction::West];
-
 #[derive(Debug)]
 struct Ship {
-    facing: Direction,
+    facing: VecDeque<Direction>,
     x: i32,
     y: i32,
     waypoint_x: i32,
@@ -57,7 +56,7 @@ struct Ship {
 impl Ship {
     fn new() -> Self {
         Ship {
-            facing: Direction::East,
+            facing: VecDeque::from(vec![Direction::East, Direction::South, Direction::West, Direction::North]),
             x: 0,
             y: 0,
             waypoint_x: 10,
@@ -72,33 +71,15 @@ impl Ship {
             'E' => self.x += value,
             'W' => self.x -= value,
             'L' => {
-                let cur_facing_index = facing_change.iter().position(|f| *f == self.facing).unwrap() as i32;
                 let ticks = value / 90;
-                let new_facing = (cur_facing_index - ticks).rem_euclid(4) as usize;
-                //self.facing = facing_change[new_facing].clone();
-                self.facing = match new_facing {
-                    0 => Direction::North,
-                    1 => Direction::East,
-                    2 => Direction::South,
-                    3 => Direction::West,
-                    _ => panic!("Not possible")
-                }
+                self.facing.rotate_left(ticks as usize);
             },
             'R' => {
-                let cur_facing_index = facing_change.iter().position(|f| *f == self.facing).unwrap() as i32;
                 let ticks = value / 90;
-                let new_facing = (cur_facing_index + ticks).rem_euclid(4) as usize;
-                //self.facing = facing_change[new_facing].clone();
-                self.facing = match new_facing {
-                    0 => Direction::North,
-                    1 => Direction::East,
-                    2 => Direction::South,
-                    3 => Direction::West,
-                    _ => panic!("Not possible")
-                }
+                self.facing.rotate_left(ticks as usize);
             },
             'F' => {
-                match self.facing {
+                match self.facing[0] {
                     Direction::North => self.y += value,
                     Direction::South => self.y -= value,
                     Direction::East => self.x += value,
@@ -118,18 +99,14 @@ impl Ship {
             'L' => {
                 for r in 0..value / 90 {
                     let orig_x = self.waypoint_x;
-                    let orig_y = self.waypoint_y;
-
-                    self.waypoint_x = -orig_y;
+                    self.waypoint_x = -self.waypoint_y;
                     self.waypoint_y = orig_x;
                 }
             },
             'R' => {
                 for r in 0..value / 90 {
                     let orig_x = self.waypoint_x;
-                    let orig_y = self.waypoint_y;
-
-                    self.waypoint_x = orig_y;
+                    self.waypoint_x = self.waypoint_y;
                     self.waypoint_y = -orig_x;
                 }
             },
