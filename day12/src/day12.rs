@@ -25,11 +25,17 @@ pub fn part1(cmds: &Vec<(char, i32)>) -> i32 {
     ship.x.abs() + ship.y.abs()
 }
 
-pub fn part2() {
+pub fn part2(cmds: &Vec<(char, i32)>) -> i32 {
+    let mut ship = Ship::new();
+    
+    for (action, value) in cmds {
+        ship.exec_action_part2(action, *value);
+    }
 
+    ship.x.abs() + ship.y.abs()
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Direction {
     North,
     East,
@@ -39,10 +45,13 @@ enum Direction {
 
 static facing_change: [Direction; 4] = [Direction::North, Direction::East, Direction::South, Direction::West];
 
+#[derive(Debug)]
 struct Ship {
     facing: Direction,
     x: i32,
-    y: i32
+    y: i32,
+    waypoint_x: i32,
+    waypoint_y: i32
 }
 
 impl Ship {
@@ -50,7 +59,9 @@ impl Ship {
         Ship {
             facing: Direction::East,
             x: 0,
-            y: 0
+            y: 0,
+            waypoint_x: 10,
+            waypoint_y: 1
         }
     }
 
@@ -97,6 +108,42 @@ impl Ship {
             _ => panic!("Invalid action")
         }
     }
+
+    fn exec_action_part2(&mut self, action: &char, value: i32) {
+        match action {
+            'N' => self.waypoint_y += value,
+            'S' => self.waypoint_y -= value,
+            'E' => self.waypoint_x += value,
+            'W' => self.waypoint_x -= value,
+            'L' => {
+                for r in 0..value / 90 {
+                    let orig_x = self.waypoint_x;
+                    let orig_y = self.waypoint_y;
+
+                    self.waypoint_x = -orig_y;
+                    self.waypoint_y = orig_x;
+                }
+            },
+            'R' => {
+                for r in 0..value / 90 {
+                    let orig_x = self.waypoint_x;
+                    let orig_y = self.waypoint_y;
+
+                    self.waypoint_x = orig_y;
+                    self.waypoint_y = -orig_x;
+                }
+            },
+            'F' => {
+                let x_delta = value * self.waypoint_x;
+                let y_delta = value * self.waypoint_y;
+
+                self.x += x_delta;
+                self.y += y_delta;
+            }
+            _ => panic!("Invalid action")
+        }
+
+    }
 }
 
 #[cfg(test)]
@@ -107,5 +154,51 @@ mod test {
     fn test_part1() {
         let cmds = vec![('F', 10), ('N', 3), ('F', 7), ('R', 90), ('F', 11)];
         assert_eq!(part1(&cmds), 25);
+    }
+
+    #[test]
+    fn test_part2() {
+        let cmds = vec![('F', 10), ('N', 3), ('F', 7), ('R', 90), ('F', 11)];
+        assert_eq!(part2(&cmds), 286);
+    }
+
+    #[test]
+    fn test_part2_R_rot() {
+        let mut ship = Ship::new();
+        ship.exec_action_part2(&'R', 90);
+        assert_eq!(ship.waypoint_x, 1);
+        assert_eq!(ship.waypoint_y, -10);
+
+        ship.exec_action_part2(&'R', 90);
+        assert_eq!(ship.waypoint_x, -10);
+        assert_eq!(ship.waypoint_y, -1);
+
+        ship.exec_action_part2(&'R', 90);
+        assert_eq!(ship.waypoint_x, -1);
+        assert_eq!(ship.waypoint_y, 10);
+
+        ship.exec_action_part2(&'R', 90);
+        assert_eq!(ship.waypoint_x, 10);
+        assert_eq!(ship.waypoint_y, 1);
+    }
+
+    #[test]
+    fn test_part2_L_rot() {
+        let mut ship = Ship::new();
+        ship.exec_action_part2(&'L', 90);
+        assert_eq!(ship.waypoint_x, -1);
+        assert_eq!(ship.waypoint_y, 10);
+
+        ship.exec_action_part2(&'L', 90);
+        assert_eq!(ship.waypoint_x, -10);
+        assert_eq!(ship.waypoint_y, -1);
+
+        ship.exec_action_part2(&'L', 90);
+        assert_eq!(ship.waypoint_x, 1);
+        assert_eq!(ship.waypoint_y, -10);
+
+        ship.exec_action_part2(&'L', 90);
+        assert_eq!(ship.waypoint_x, 10);
+        assert_eq!(ship.waypoint_y, 1);
     }
 }
