@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use std::fs;
 use std::str::FromStr;
 
@@ -55,7 +54,7 @@ pub fn part2(input: Vec<(usize, usize)>) -> usize {
     let delta = ids[0].0 * ids[1].0;
     loop {
         let mut valid = true;
-        for (id, offset) in ids[2..].into_iter() {
+        for (id, offset) in ids[2..].iter() {
             if (t as isize + offset) % id != 0 {
                 valid = false;
                 break;
@@ -101,12 +100,13 @@ pub fn part2_v2(input: Vec<(usize, usize)>) -> usize {
         // that satisfy our constraints. When we do we track that
         // we stop looking at that id in future iterations and update
         // our step value to include that id.
-        for i in cur_index..ids.len() {
-            if (t as isize + ids[i].1) % ids[i].0 as isize != 0 {
+        //for i in cur_index..ids.len() {
+        for (v, off) in ids[cur_index..].iter() {
+            if (t as isize + *off) % *v as isize != 0 {
                 break;
             }
             cur_index += 1;
-            delta *= ids[i].0;
+            delta *= v;
         }
 
         if cur_index == input.len() {
@@ -119,7 +119,7 @@ pub fn part2_v2(input: Vec<(usize, usize)>) -> usize {
     // Get the original offset for our (likely) changed first index
     // value and adjust the calculated t by that amount.
     for (v, off) in input.iter() {
-        if *v == ids[0].0 as usize {
+        if *v == ids[0].0 {
             return t as usize - off;
         }
     }
