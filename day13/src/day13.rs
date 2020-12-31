@@ -81,6 +81,53 @@ pub fn part2(input: Vec<(usize, usize)>) -> usize {
     0
 }
 
+pub fn part2_v2(input: Vec<(usize, usize)>) -> usize {
+    // Sort the input vector from largest to smallest and adjust
+    // the time offset values as necessary so our first index has
+    // a zero offset.
+    let mut inputs = input.clone();
+    inputs.sort_unstable_by_key(|k| k.0);
+    inputs.reverse();
+    let ids: Vec<(usize, isize)> = inputs.iter().map(|(v, off)| {
+        let offset = *off as isize - inputs[0].1 as isize;
+        (*v, offset)
+    }).collect();
+
+    let mut cur_index = 1;
+    let mut delta: usize = ids[0].0;
+    let mut t = ids[0].0;
+    loop {
+        // Iterate over our "remaining" bus ids looking for a t
+        // that satisfy our constraints. When we do we track that
+        // we stop looking at that id in future iterations and update
+        // our step value to include that id.
+        for i in cur_index..ids.len() {
+            if (t as isize + ids[i].1) % ids[i].0 as isize != 0 {
+                break;
+            }
+            cur_index += 1;
+            delta *= ids[i].0;
+        }
+
+        if cur_index == input.len() {
+            break
+        }
+
+        t += delta;
+    }
+
+    // Get the original offset for our (likely) changed first index
+    // value and adjust the calculated t by that amount.
+    for (v, off) in input.iter() {
+        if *v == ids[0].0 as usize {
+            return t as usize - off;
+        }
+    }
+
+    // Can't get here
+    0
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -88,9 +135,11 @@ mod test {
     #[test]
     fn test_part2() {
         let input = vec![(17, 0), (13, 2), (19, 3)];
-        assert_eq!(part2(input), 3417);
+        assert_eq!(part2(input.clone()), 3417);
+        assert_eq!(part2_v2(input), 3417);
 
         let input = vec![(7, 0), (13, 1), (59, 4), (31, 6), (19, 7)];
-        assert_eq!(part2(input), 1068781);
+        assert_eq!(part2(input.clone()), 1068781);
+        assert_eq!(part2_v2(input), 1068781);
     }
 }
